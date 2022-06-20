@@ -1,23 +1,28 @@
+import os
+
 import pygame as pg
 
 from arkanoid import ANCHO, ALTO
+from arkanoid.escenas import Portada, Partida, HallOfFame
 
 class Arkanoid:
-    def __init__(self):
+    def __init__(self) -> None:
         print("Arranca el juego")
         pg.init()
-        pg.display.set_mode((ANCHO, ALTO))
+        self.display = pg.display.set_mode((ANCHO, ALTO))
+        pg.display.set_caption("Arkanoid BZ version")
+        
+        icon = pg.image.load(
+            os.path.join("resources/images/ball1.png."))
+        pg.display.set_icon(icon)
+
+        self.escenas = [
+            Portada(self.display),
+            Partida(self.display),
+            HallOfFame(self.display),
+        ]
 
     def jugar(self):
         """Este es el bucle principal."""
-        salir = False
-        while not salir:
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    salir = True
-            self.display.fill((99, 99, 99))
-            pg.display.flip()
-
-
-if __name__ == "__main__":
-    Arkanoid()
+        for escena in self.escenas:
+            escena.bucle_principal()
