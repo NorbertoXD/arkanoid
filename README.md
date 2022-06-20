@@ -58,3 +58,7 @@ pip install -r requirements-dev.txt
 # En VS Code
 code .
 ```
+
+## Atribuciones
+
+El icono 
