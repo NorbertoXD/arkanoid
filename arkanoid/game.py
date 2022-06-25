@@ -7,7 +7,7 @@ from arkanoid.escenas import Portada, Partida, HallOfFame
 
 class Arkanoid:
     def __init__(self) -> None:
-        print("Arranca el juego")
+        print("Arranca el juego!!")
         pg.init()
         self.display = pg.display.set_mode((ANCHO, ALTO))
         pg.display.set_caption("Arkanoid BZ version")
