@@ -3,14 +3,13 @@ import os
 import pygame as pg
 
 from . import ALTO, ANCHO, COLOR_FONDO_PORTADA, COLOR_MENSAJE, FPS
-from .entidades import Raqueta
-
+from .entidades import Ladrillo, Pelota, Raqueta
 
 
 class Escena:
     def __init__(self, pantalla: pg.Surface):
         self.pantalla = pantalla
-        self.reloj.tick(FPS)
+        self.reloj = pg.time.Clock()
 
     def bucle_principal(self):
         """
@@ -21,7 +20,7 @@ class Escena:
 
 
 class Portada(Escena):
-    def __init__(self, pantalla):
+    def __init__(self, pantalla: pg.Surface):
         super().__init__(pantalla)
         
         self.logo = pg.image.load(
@@ -40,11 +39,13 @@ class Portada(Escena):
                 if event.type == pg.QUIT:
                     pg.quit()
 
-            self.pantalla.fill((99, 0, 0))
+            self.pantalla.fill((COLOR_FONDO_PORTADA))
             
             self.pintar_logo()
             self.pintar_texto()
 
+           
+           
             pg.display.flip()
 
     def pintar_logo(self):
@@ -57,7 +58,7 @@ class Portada(Escena):
         mensaje = "Pulsa espacio para empezar"
         texto = self.tipografia.render(mensaje, True, COLOR_MENSAJE)
         ancho_texto = texto.get_width()
-        pos_x = (ANCHO - ancho_texto) / 2
+        pos_x = (ANCHO - ancho_texto) / 2       # ANCHO/2 - ancho_texto/2
         pos_y = .75 * ALTO
         self.pantalla.blit(texto, (pos_x, pos_y))
 
@@ -74,27 +75,63 @@ class Partida(Escena):
         bg_file = os.path.join("resources", "images", "background.jpg")
         self.fondo = pg.image.load(bg_file)
         self.jugador = Raqueta()
+        self.crear_muro()
+        self.pelotita = Pelota(midbottom=self.jugador.rect.midtop)
     
     def bucle_principal(self):
         salir = False
+        partida_iniciada = False
         while not salir:
-            self.reloj.ti
-            self.jugador.update()
+            self.reloj.tick(FPS)
 
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     pg.quit()
+                if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
+                    partida_iniciada = True
             
             self.pantalla.fill((0, 0, 66))
             self.pintar_fondo()
 
-            # probar a puntar la raqueta
+            self.jugador.update()
+            self.pelotita.update(self.jugador, partida_iniciada)
+            self.pelotita.hay_colision(self.jugador)
+            golpeados = pg.sprite.spritecollide(self.pelotita, self.ladrillos, True)
+            if len(golpeados) > 0:
+                self.pelotita.velocidad_y *= -1
+                # con todos los ladrillos golpeados, sumar puntuación correspondiente
+
+
+            # pintar la raqueta
             self.pantalla.blit(self.jugador.image, self.jugador.rect)
+
+            # pintar el muro
+            self.ladrillos.draw(self.pantalla)
+
+            # pintar la pelota
+            self.pantalla.blit(self.pelotita.image, self.pelotita.rect)
             
             pg.display.flip()
     
     def pintar_fondo(self):
         self.pantalla.blit(self.fondo, (0, 0))
+
+    def crear_muro(self):
+        num_filas = 5
+        num_columnas = 6
+        self.ladrillos = pg.sprite.Group()
+        self.ladrillos.empty()
+
+        margen_y = 40
+
+        for fila in range(num_filas):
+            for columna in range(num_columnas):
+                ladrillo = Ladrillo(fila, columna)
+                margen_x = (ANCHO - ladrillo.image.get_width()*num_columnas) / 2
+                ladrillo.rect.x += margen_x
+                ladrillo.rect.y += margen_y
+                self.ladrillos.add(ladrillo)
+
 
 class HallOfFame(Escena):
     def bucle_principal(self):
