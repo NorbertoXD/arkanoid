@@ -5,6 +5,7 @@ import pygame as pg
 from arkanoid import ANCHO, ALTO
 from arkanoid.escenas import Portada, Partida, HallOfFame
 
+
 class Arkanoid:
     def __init__(self) -> None:
         print("Arranca el juego!!")
